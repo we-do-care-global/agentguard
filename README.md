@@ -1,7 +1,7 @@
 # AgentGuard – Security & Governance Control Plane for Autonomous AI Agents
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![ORCID](https://img.shields.io/badge/orcid-0000-0002-1825-0097-brightgreen.svg)](https://orcid.org/0000-0002-1825-0097)
+[![ORCID](https://img.shields.io/badge/orcid-0009-0009-8515-2727-brightgreen.svg)](https://orcid.org/0009-0009-8515-2727)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](https://www.python.org())
 [![Tests](https://github.com/${ORG}/${repo}/actions/workflows/ci.yml/badge.svg)](https://github.com/${ORG}/${repo}/actions/workflows/ci.yml)
 
