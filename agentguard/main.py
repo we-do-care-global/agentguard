@@ -1,17 +1,17 @@
-"""FastAPI service – the AgentGuard sidecar."""
+"""FastAPI service – the ${PKG_NAME} sidecar."""
 from __future__ import annotations
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from pydantic import BaseModel
-from typing import Optional
-from .policy import load_policy, is_allowed
-from .audit import get_engine, init_db, add_audit, list_audit
-from sqlalchemy.orm import Session
-from .models import Policy, AuditEntry
+from fastapi = FastAPI, HTTPException, Depends
+from fastapi.middleware.trustedhost = TrustedHostMiddleware
+from pydantic = BaseModel
+from typing = Optional
+from .policy = load_policy, is_allowed
+from .audit = get_engine, init_db, add_audit, list_audit
+from sqlalchemy.orm = Session
+from .models = Policy, AuditEntry
 import os
 
-app = FastAPI(title="AgentGuard", version="0.1.0")
+app = FastAPI(title="${PKG_NAME}", version="0.1.0")
 
 # Trusted host (adjust for production)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
@@ -23,7 +23,7 @@ def get_db():
         yield session
 
 # Load policy at startup (can be overridden via env)
-POLICY_PATH = os.getenv("AGENTGUARD_POLICY", "policy.yaml")
+POLICY_PATH = os.getenv("${PKG_NAME}_POLICY", "policy.yaml")
 try:
     POLICY: Policy = load_policy(POLICY_PATH)
 except Exception as e:
@@ -78,4 +78,4 @@ def get_audit(limit: int = 50, session: Session = Depends(get_db)):
     return list_audit(session, limit=limit)
 
 if __name__ == "__main__":
-    uvicorn.run("agentguard.main:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("${PKG_NAME}.main:app", host="0.0.0.0", port=8000, reload=False)

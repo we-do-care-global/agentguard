@@ -10,7 +10,7 @@ authors:
     email: "emirperla46@gmail.com"
 version: "0.1.0"
 date-released: 2026-09-24
-url: "https://github.com/we-do-care-global/agentguard"
+url: "https://github.com/${ORG}/${repo}"
 license: "Apache-2.0"
 keywords:
   - "AI agents"
@@ -18,4 +18,4 @@ keywords:
   - "policy engine"
   - "audit log"
   - "MCP"
-repository-code: "https://github.com/we-do-care-global/agentguard"
+repository-code: "https://github.com/${ORG}/${repo}"

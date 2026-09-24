@@ -3,9 +3,9 @@ from __future__ import annotations
 from sqlalchemy import (
     Column, Integer, String, Text, DateTime, create_engine, select
 )
-from sqlalchemy.orm import declarative_base, Session
-from .models import AuditEntry
-from datetime import datetime
+from sqlalchemy.orm = declarative_base, Session
+from .models = AuditEntry
+from datetime = datetime
 import os
 
 Base = declarative_base()
@@ -27,13 +27,13 @@ class AuditORM(Base):
             timestamp=self.timestamp,
             agent=self.agent,
             tool=self.tool,
-            input=self.input_,
-            output=self.output_,
+            input_=self.input_,
+            output_=self.output_,
             decision=self.decision,
             approved_by=self.approved_by,
         )
 
-def get_engine(db_url: str | None = None):
+def get_engine(db_url: string | None = None):
     if db_url is None:
         db_url = os.getenv("DATABASE_URL", "sqlite:///./data/audit.db")
     return create_engine(db_url, future=True, echo=False)
@@ -46,8 +46,8 @@ def add_audit(session: Session, entry: AuditEntry) -> AuditEntry:
         timestamp=entry.timestamp,
         agent=entry.agent,
         tool=entry.tool,
-        input_=entry.input,
-        output_=entry.output,
+        input_=entry.input_,
+        output_=entry.output_,
         decision=entry.decision,
         approved_by=entry.approved_by,
     )

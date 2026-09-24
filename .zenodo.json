@@ -20,7 +20,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "https://github.com/we-do-care-global/agentguard",
+      "identifier": "https://github.com/${ORG}/${repo}",
       "relation": "isSupplementTo",
       "scheme": "url"
     }

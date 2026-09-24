@@ -3,16 +3,16 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentguard"
+name = "${repo//-/_}"
 version = "0.1.0"
-description = "Security & governance control plane for autonomous AI agents"
+description = "Production ready scaffold for ${repo}."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "Emir Perla", email = "emirperla46@gmail.com"}
 ]
-keywords = ["ai", "agents", "guardrails", "policy", "audit"]
+keywords = ["AI", "agents", "guardrails"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
@@ -39,7 +39,7 @@ mypy = ["mypy>=1.10"]
 types-PyYAML = ["types-PyYAML>=6.0"]
 
 [project.scripts]
-agentguard = "agentguard.cli:app"
+${repo//-/_} = "${repo//-/_}".cli:app
 
 [tool.ruff]
 line-length = 100

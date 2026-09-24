@@ -1,82 +1,58 @@
-# AgentGuard
+# AgentGuard – Security & Governance Control Plane for Autonomous AI Agents
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ORCID](https://img.shields.io/badge/orcid-0000-0002-1825-0097-brightgreen.svg)](https://orcid.org/0000-0002-1825-0097)
-[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](https://www.python.org/)
-[![Tests](https://github.com/we-do-care-global/agentguard/actions/workflows/ci.yml/badge.svg)](https://github.com/we-do-care-global/agentguard/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](https://www.python.org())
+[![Tests](https://github.com/${ORG}/${repo}/actions/workflows/ci.yml/badge.svg)](https://github.com/${ORG}/${repo}/actions/workflows/ci.yml)
 
-**Security & governance control plane for autonomous AI agents**  
-Policy engine • Tool‑call proxy • Append‑only audit log • Human‑in‑the‑loop approvals • One‑click kill switch
-
----
-
-## 🚀 Live prototype  
+## 🚀 Live prototype
 https://command-center-agentguard-wallet-os-lz1sg2.v2.appdeploy.ai/
 
-## 📦 Production repository  
-https://github.com/we-do-care-global/agentguard
+## 📦 Production repository
+https://github.com/${ORG}/${repo}
 
-## 🌐 Landing page (GitHub Pages)  
-https://we-do-care-global.github.io/agentguard/
+## 🌐 Landing page (GitHub Pages)
+https://we-do-care-global.github.io/${repo}/
 
 ---
 
 ## Quickstart
 
-```bash
+\`\`\`bash
 # Install
-pip install agentguard
+pip install ${repo//-/_}
 
-# Initialise a new agent
-agentguard init --agent research-bot
+# Initialise a new agent (example)
+${repo//-/_} init --agent research-bot
 
 # Run with a policy file (see policy.yaml.example)
-agentguard run --policy policy.yaml
-```
+${repo//-/_} run --policy policy.yaml
+\`\`\`
 
-### Example `policy.yaml`
+### Example \`policy.yaml\` (if applicable)
 
-```yaml
-agent: research-bot
+\`\`\`yaml
+agent: example-bot
 allowed_tools: [web_search, read_file]
 denied_tools: [send_email, transfer_funds]
 limits:
   max_usd_per_day: 5.00
   max_tokens_per_call: 4000
-```
+\`\`\`
 
 ---
 
-## Architecture  
+## Architecture
 
-```
-[LangChain] [LangGraph] [MCP Client]
-          \      |      /
-           \     |     /
-            ▼    ▼    ▼
-        ┌─────────────┐
-        │ AgentGuard  │
-        │ (proxy)     │
-        └─────┬───────┘
-              │
-   ┌──────────┼──────────┐
-   │          │          │
-Policy Engine  Risk Scorer  Approval Queue
-   │          │          │
-   ▼          ▼          ▼
-[Tools/APIs] [Wallets] [Databases] …
-          │
-          ▼
-   Append‑only audit log (SQLite)
-```
+*(Add architecture diagram as needed)*
 
 ---
 
 ## Development
 
-```bash
-git clone https://github.com/we-do-care-global/agentguard.git
-cd agentguard
+\`\`\`bash
+git clone https://github.com/${ORG}/${repo}.git
+cd ${repo}
 
 # Install dev dependencies
 pip install -e ".[dev]"
@@ -88,27 +64,25 @@ pytest
 ruff check .
 
 # Type check
-mypy agentguard
-```
+mypy ${repo//-/_}
+\`\`\`
 
 ---
 
 ## Docker compose
 
-```bash
+\`\`\`bash
 docker compose up -d   # starts API, Postgres, Redis
-```
+\`\`\`
 
-API will be available at `http://localhost:8000`.
-
----
-
-## License  
-
-Apache 2.0 – see `LICENSE` file.
+API will be available at \`http://localhost:8000\$.
 
 ---
 
-## Contact  
+## License
+Apache 2.0 – see \`LICENSE\` file.
 
+---
+
+## Contact
 Open an issue or reach out to Emir Perla (@we-do-care-global) for questions, feedback, or collaboration.

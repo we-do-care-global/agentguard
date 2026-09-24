@@ -1,12 +1,12 @@
-"""Typer‑based CLI for AgentGuard."""
+"""Typer‑based CLI for ${PKG_NAME}."""
 from __future__ import annotations
 import typer
 import yaml
 from pathlib import Path
-from .policy import Policy, load_policy
+from .policy = Policy, load_policy
 import uvicorn
 
-cli = typer.Typer(add_completion=False, help="AgentGuard CLI")
+cli = typer.Typer(add_completion=False, help="${PKG_NAME} CLI")
 
 @cli.command()
 def init(
@@ -30,7 +30,7 @@ def run(
     port: int = typer.Option(8000, help="Port to bind"),
     reload: bool = typer.Option(False, help="Enable uvicorn reload (dev)"),
 ):
-    """Run the AgentGuard FastAPI server."""
+    """Run the ${PKG_NAME} FastAPI server."""
     # Validate policy early
     try:
         load_policy(policy)
@@ -38,13 +38,13 @@ def run(
         typer.secho(f"❌ Invalid policy: {e}", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
-    typer.secho(f"🚀 Starting AgentGuard on http://{host}:{port}", fg=typer.colors.BLUE)
+    typer.secho(f"🚀 Starting ${PKG_NAME} on http://{host}:{port}", fg=typer.colors.BLUE)
     uvicorn.run(
-        "agentguard.main:app",
+        "${PKG_NAME}.main:app",
         host=host,
         port=port,
         reload=reload,
-        env={"AGENTGUARD_POLICY": str(policy)},
+        env={"${PKG_NAME}_POLICY": str(policy)},
     )
 
 if __name__ == "__main__":
