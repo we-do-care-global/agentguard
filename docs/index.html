@@ -2,10 +2,83 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>${repo}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AgentGuard — Security & Governance for AI Agents</title>
+<style>
+:root{--bg:#0a0b10;--bg2:#101218;--card:#14161f;--border:#232635;--text:#e8eaf2;--muted:#8b90a6;--accent:#ff4d4d;--accent2:#ff9a3c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+code,pre,.mono{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace}
+a{color:inherit;text-decoration:none}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,11,16,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.nav-inner a{font-weight:600;font-size:.95rem;color:var(--text)}
+.hero{max-width:1100px;margin:0 auto;padding:120px 24px 80px}
+.hero h1{font-size:3.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-bottom:24px}
+.hero .tagline{font-size:1.25rem;color:var(--muted);max-width:640px;margin-bottom:32px}
+.badges{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px}
+.badge{padding:6px 14px;border:1px solid var(--border);border-radius:999px;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--card)}
+.cta{display:inline-flex;gap:12px}
+.btn{padding:12px 24px;border-radius:10px;font-weight:700;font-size:.95rem;transition:transform .1s,box-shadow .2s}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 0 0 0 rgba(255,77,77,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,77,77,.35)}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.section{max-width:1100px;margin:0 auto;padding:80px 24px}
+.section h2{font-size:2rem;font-weight:700;margin-bottom:40px;letter-spacing:-.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.card p{color:var(--muted);font-size:.95rem}
+.arch{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:32px}
+.arch pre{background:#0d0e14;padding:16px;border-radius:10px;overflow-x:auto;font-size:.85rem;color:#c0d0e0;border:1px solid var(--border)}
+.stack{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.stack span{padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;color:var(--muted);background:var(--card)}
+.quickstart{background:#0d0e14;border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:24px}
+.quickstart pre{background:#000;padding:16px;border-radius:8px;overflow-x:auto;font-size:.85rem;border:1px solid var(--border);color:#e8eaf2}
+footer{border-top:1px solid var(--border);padding:40px 24px;text-align:center;color:var(--muted);font-size:.9rem}
+@media(max-width:640px){.hero h1{font-size:2.4rem}.nav-inner{flex-wrap:wrap;gap:8px}}
+</style>
 </head>
 <body>
-<h1>${repo}</h1>
-<p>Placeholder landing page – replace with the full HTML you generated earlier.</p>
-</body>
-</html>
+<nav><div class="nav-inner"><a href="#">AgentGuard</a><div><a href="#features">Features</a> <a href="#quickstart">Quickstart</a> <a href="https://github.com/we-do-care-global/agentguard" target="_blank">GitHub →</a></div></div></nav>
+<header class="hero"><h1>AgentGuard<br><span style="color:var(--accent)">Security &amp; Governance for Autonomous AI Agents</span></h1><p class="tagline">Policy engine, tool-call proxy, append-only audit log, human-in-the-loop approvals, and kill-switch for LLM-based agents.</p>
+<div class="badges"><span class="badge">Apache 2.0</span><span class="badge">ORCID: 0009-0009-8515-2727</span><span class="badge">Python 3.11 / 3.12</span><span class="badge">87% test coverage</span></div>
+<div class="cta"><a class="btn btn-primary" href="https://github.com/we-do-care-global/agentguard">Star on GitHub</a> <a class="btn btn-secondary" href="#quickstart">Quickstart</a></div>
+</header>
+
+<main>
+<section class="section" id="problem"><div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center"><div><h2>The Problem</h2><p style="color:var(--muted)">Agents now send email, call APIs, move money, and interact with wallets — with almost no governance layer. There is no standard answer to: <strong>What is this agent allowed to do?</strong> <strong>What did it actually do?</strong> <strong>Who approved it?</strong> <strong>How do I kill it mid-run?</strong></p></div><div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px"><h3 style="margin-bottom:12px">AgentGuard answers</h3><ul style="color:var(--muted);line-height:2"><li>YAML policy engine (allow/deny tools, cap spend, limit tokens)</li><li>Tool-call proxy for LangChain, LangGraph, MCP</li><li>Append-only audit log — every action, queryable</li><li>Human-in-the-loop approval queue</li><li>One-click kill switch per agent</li></ul></div></div></section>
+
+<section class="section" id="features"><h2>Features</h2><div class="grid"><article class="card"><h3>Policy Engine</h3><p>YAML-based allow/deny lists, spend caps, token limits. Load at startup; enforce at every tool call.</p></article><article class="card"><h3>Audit Log</h3><p>Append-only SQLite/SQLAlchemy log. Query by agent, tool, decision, or approved-by.</p></article><article class="card"><h3>Approval Queue</h3><p>Denied actions route to a human-in-the-loop queue. Approve or deny with a single call.</p></article><article class="card"><h3>Kill Switch</h3><p>Per-agent kill switch stops execution immediately — no partial state corruption.</p></article><article class="card"><h3>Docker Compose</h3><p>FastAPI + PostgreSQL + Redis in one command. Ready for production.</p></article><article class="card"><h3>CLI + API</h3><p>Typer CLI (init, run) and FastAPI endpoints (/toolcall, /audit).</p></article></div></section>
+
+<section class="section" id="architecture"><h2>Architecture</h2><div class="arch"><pre>
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Agent     │────▶│  Policy      │────▶│  Tool Call  │
+│  (LangGraph)│     │  Engine      │     │  Proxy      │
+└─────────────┘     └──────────────┘     └─────────────┘
+                            │                    │
+                            ▼                    ▼
+                      ┌──────────┐        ┌──────────┐
+                      │  Audit   │        │  Kill    │
+                      │  Log     │        │  Switch  │
+                      └──────────┘        └──────────┘
+</pre></div></section>
+
+<section class="section" id="stack"><h2>Tech Stack</h2><div class="stack"><span>Python 3.11 / 3.12</span><span>FastAPI</span><span>Pydantic v2</span><span>SQLAlchemy 2.0</span><span>Typer</span><span>Uvicorn</span><span>PostgreSQL</span><span>Redis</span><span>OpenTelemetry</span><span>Docker Compose</span><span>Apache 2.0</span></div></section>
+
+<section class="section" id="quickstart"><h2>Quickstart</h2><div class="quickstart"><pre><code># Install
+pip install agentguard
+
+# Init policy
+agentguard init --agent research-bot
+
+# Run server
+agentguard run --policy policy.yaml
+</code></pre><p style="color:var(--muted);margin-top:12px">Docker: <code>docker compose up -d</code> — API at <code>http://localhost:8000</code></p></div></section>
+
+<section class="section" id="roadmap"><h2>Roadmap</h2><div class="grid"><article class="card"><h3>v0.2</h3><p>Next.js dashboard + Slack approvals.</p></article><article class="card"><h3>v0.3</h3><p>Prompt-injection detector (heuristic + ML).</p></article><article class="card"><h3>v0.4</h3><p>Wallet risk scoring (web3.py).</p></article><article class="card"><h3>v0.5</h3><p>MCP-native server + TypeScript SDK.</p></article></div></section>
+</main>
+
+<footer><p>AgentGuard v0.1.0 — <a href="https://github.com/we-do-care-global/agentguard">github.com/we-do-care-global/agentguard</a> · <a href="https://orcid.org/0009-0009-8515-2727">ORCID 0009-0009-8515-2727</a> · Apache 2.0</p></footer>
+</body></html>
