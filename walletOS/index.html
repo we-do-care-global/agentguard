@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet OS — AgentGuard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0:#080b10; --bg-1:#0d1117; --bg-2:#131922; --bg-3:#1a212c;
+    --border:#1f2733; --border-hi:#2d3744;
+    --t0:#e6edf3; --t1:#8b949e; --t2:#6e7681;
+    --green:#3fb950; --green-dim:#1b3a22;
+    --red:#f85149; --red-dim:#3d1a1a;
+    --amber:#d29922; --amber-dim:#3a2d0a;
+    --blue:#58a6ff; --blue-dim:#0d2a4d;
+    --purple:#bc8cff;
+    --mono:ui-monospace,"SF Mono",Consolas,monospace;
+  }
+  body {
+    background:var(--bg-0); color:var(--t0);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:13px; line-height:1.5; min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .topbar {
+    display:flex; align-items:center; gap:16px;
+    padding:12px 20px; background:var(--bg-1);
+    border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:50;
+  }
+  .brand { display:flex; align-items:center; gap:10px; padding-right:16px; border-right:1px solid var(--border); }
+  .brand-mark {
+    width:26px; height:26px; border-radius:6px;
+    background:linear-gradient(135deg,#3fb950 0%,#58a6ff 100%);
+    display:grid; place-items:center; font-weight:800; font-size:12px; color:#080b10;
+  }
+  .brand-text .name { font-weight:700; font-size:13px; }
+  .brand-text .sub { font-size:10px; color:var(--t2); font-family:var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+  .status-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 10px; border-radius:99px;
+    background:var(--green-dim); border:1px solid rgba(63,185,80,.3);
+    font-size:11px; font-family:var(--mono); color:var(--green);
+  }
+  .status-pill .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .status-pill.danger { background:var(--red-dim); border-color:rgba(248,81,73,.3); color:var(--red); }
+  .status-pill.danger .dot { background:var(--red); box-shadow:0 0 6px var(--red); }
+  .topbar-spacer { flex:1; }
+  .kill-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 16px; border-radius:6px;
+    background:var(--red-dim); border:1px solid rgba(248,81,73,.4);
+    color:var(--red); font-weight:700; font-size:12px;
+    font-family:var(--mono); letter-spacing:.05em; text-transform:uppercase;
+    cursor:pointer; transition:all .15s;
+  }
+  .kill-btn:hover { background:var(--red); color:#fff; }
+  .kill-banner {
+    display:none; align-items:center; gap:14px;
+    padding:14px 20px;
+    background:repeating-linear-gradient(45deg,#3d1a1a,#3d1a1a 10px,#2a1212 10px,#2a1212 20px);
+    border-bottom:2px solid var(--red); font-family:var(--mono);
+  }
+  .kill-banner.active { display:flex; }
+  .kill-banner .skull { width:30px; height:30px; border-radius:50%; background:var(--red); color:#fff; display:grid; place-items:center; font-size:16px; }
+  .kill-banner .msg .t { font-weight:700; color:var(--red); font-size:13px; letter-spacing:.05em; }
+  .kill-banner .msg .s { font-size:11px; color:var(--t1); margin-top:2px; }
+  .kill-release { padding:6px 14px; border-radius:6px; background:transparent; border:1px solid var(--red); color:var(--red); font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer; }
+  .kill-release:hover { background:var(--red); color:#fff; }
+  .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:14px; padding:16px 20px 40px; max-width:1600px; margin:0 auto; }
+  .panel { background:var(--bg-1); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .panel.col-4 { grid-column:span 4; }
+  .panel.col-6 { grid-column:span 6; }
+  .panel.col-8 { grid-column:span 8; }
+  .panel.col-12 { grid-column:span 12; }
+  @media (max-width:1100px) { .panel.col-4,.panel.col-6,.panel.col-8{grid-column:span 12;} }
+  .panel-head { display:flex; align-items:center; gap:10px; padding:11px 14px; background:var(--bg-2); border-bottom:1px solid var(--border); }
+  .panel-title { font-size:12px; font-weight:600; color:var(--t0); }
+  .panel-sub { font-size:10px; color:var(--t2); font-family:var(--mono); }
+  .panel-head .spacer { flex:1; }
+  .panel-body { padding:12px 14px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .stat { background:var(--bg-2); border:1px solid var(--border); border-radius:6px; padding:12px 14px; }
+  .stat .lbl { font-size:9px; font-family:var(--mono); color:var(--t2); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+  .stat .val { font-size:20px; font-weight:700; font-family:var(--mono); color:var(--t0); }
+  .stat .val.green { color:var(--green); }
+  .stat .val.amber { color:var(--amber); }
+  .stat .val.red { color:var(--red); }
+  .stat .sub { font-size:10px; font-family:var(--mono); color:var(--t2); margin-top:3px; }
+  .key-item { display:flex; align-items:center; gap:10px; padding:10px; background:var(--bg-2); border-radius:6px; margin-bottom:7px; border-left:2px solid var(--blue); }
+  .key-item:last-child { margin-bottom:0; }
+  .key-item .kico { width:26px; height:26px; border-radius:5px; background:var(--blue-dim); color:var(--blue); display:grid; place-items:center; font-size:13px; flex-shrink:0; }
+  .key-item .kname { font-family:var(--mono); font-size:11px; color:var(--t0); font-weight:600; }
+  .key-item .kval { font-family:var(--mono); font-size:10px; color:var(--purple); }
+  .key-item .kscope { font-family:var(--mono); font-size:9px; color:var(--t2); margin-top:2px; }
+  .spend-bar { height:8px; background:var(--bg-3); border-radius:4px; overflow:hidden; margin:8px 0; }
+  .spend-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--amber)); border-radius:4px; transition:width .3s; }
+  .spend-fill.warn { background:linear-gradient(90deg,var(--amber),var(--red)); }
+  .spend-meta { display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--t2); }
+  .spend-meta strong { color:var(--t0); }
+  .tx-item { background:var(--bg-2); border:1px solid var(--border); border-left:3px solid var(--amber); border-radius:6px; padding:11px 12px; margin-bottom:9px; }
+  .tx-item:last-child { margin-bottom:0; }
+  .tx-item .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .tx-item .action { font-family:var(--mono); font-size:12px; color:var(--t0); font-weight:600; }
+  .tx-item .age { font-family:var(--mono); font-size:10px; color:var(--amber); }
+  .tx-item .meta { font-family:var(--mono); font-size:10px; color:var(--t2); line-height:1.6; margin-bottom:8px; }
+  .tx-item .meta span { color:var(--t1); }
+  .tx-actions { display:flex; gap:6px; }
+  .btn { padding:5px 12px; border-radius:5px; font-size:11px; font-weight:600; font-family:var(--mono); cursor:pointer; border:1px solid transparent; transition:all .12s; }
+  .btn.approve { background:var(--green-dim); color:var(--green); border-color:rgba(63,185,80,.35); }
+  .btn.approve:hover { background:var(--green); color:#080b10; }
+  .btn.deny { background:var(--red-dim); color:var(--red); border-color:rgba(248,81,73,.35); }
+  .btn.deny:hover { background:var(--red); color:#fff; }
+  .btn.ghost { background:transparent; color:var(--t1); border-color:var(--border-hi); }
+  .btn.ghost:hover { color:var(--t0); border-color:var(--t2); }
+  .tx-table { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11px; }
+  .tx-table th { text-align:left; padding:6px 10px; font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--t2); border-bottom:1px solid var(--border); }
+  .tx-table td { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--t1); }
+  .tx-table tr:hover { background:var(--bg-2); }
+  .tx-table .hash { color:var(--purple); font-size:10px; }
+  .tx-table .amt { color:var(--t0); font-weight:600; }
+  .tx-table .dir.out { color:var(--red); }
+  .tx-table .dir.in { color:var(--green); }
+  .badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; letter-spacing:.05em; }
+  .badge.confirmed { background:var(--green-dim); color:var(--green); }
+  .badge.pending { background:var(--amber-dim); color:var(--amber); }
+  .badge.blocked { background:var(--red-dim); color:var(--red); }
+  .audit-toolbar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg-2); border-bottom:1px solid var(--border); }
+  .audit-toolbar .chain-status { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; color:var(--green); }
+  .audit-toolbar .chain-status .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 5px var(--green); }
+  .audit-toolbar .spacer { flex:1; }
+  .audit-log { font-family:var(--mono); font-size:11px; max-height:280px; overflow-y:auto; }
+  .audit-row { display:grid; grid-template-columns:48px 90px 140px 1fr 80px; gap:10px; padding:7px 14px; border-bottom:1px solid var(--border); align-items:center; }
+  .audit-row:hover { background:var(--bg-2); }
+  .audit-row .seq { color:var(--t2); }
+  .audit-row .hash { color:var(--purple); font-size:10px; }
+  .audit-row .action-name { color:var(--t0); }
+  .audit-row .actor { color:var(--t1); }
+  .audit-row .time { color:var(--t2); text-align:right; }
+  .audit-row.kill-entry { background:rgba(248,81,73,.06); }
+  .audit-row.kill-entry .action-name { color:var(--red); }
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); backdrop-filter:blur(4px); z-index:100; place-items:center; padding:20px; }
+  .modal.active { display:grid; }
+  .modal-card { background:var(--bg-1); border:1px solid var(--border-hi); border-radius:10px; max-width:480px; width:100%; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+  .modal-head { padding:16px 20px; background:var(--red-dim); border-bottom:1px solid rgba(248,81,73,.3); display:flex; align-items:center; gap:12px; }
+  .modal-head .ico { width:32px; height:32px; border-radius:8px; background:var(--red); color:#fff; display:grid; place-items:center; font-size:18px; }
+  .modal-head h3 { font-size:15px; color:var(--red); font-weight:700; }
+  .modal-head p { font-size:11px; color:var(--t1); margin-top:2px; font-family:var(--mono); }
+  .modal-body { padding:20px; }
+  .modal-body p { font-size:13px; color:var(--t1); line-height:1.6; margin-bottom:14px; }
+  .modal-body p strong { color:var(--t0); }
+  .modal-body label { display:block; font-size:10px; color:var(--t2); text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono); margin-bottom:6px; }
+  .modal-body input { width:100%; padding:10px 12px; background:var(--bg-2); border:1px solid var(--border-hi); border-radius:6px; color:var(--t0); font-family:var(--mono); font-size:13px; letter-spacing:.1em; outline:none; }
+  .modal-body input:focus { border-color:var(--red); }
+  .modal-foot { padding:14px 20px; background:var(--bg-2); border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+  .btn-danger { padding:9px 20px; border-radius:6px; background:var(--red); color:#fff; border:0; font-weight:700; font-size:12px; font-family:var(--mono); letter-spacing:.05em; cursor:pointer; }
+  .btn-danger:disabled { background:var(--bg-3); color:var(--t2); cursor:not-allowed; }
+  .btn-danger:not(:disabled):hover { background:#ff6259; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:var(--bg-1); }
+  ::-webkit-scrollbar-thumb { background:var(--bg-3); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">W</div>
+    <div class="brand-text">
+      <div class="name">Wallet OS</div>
+      <div class="sub">AgentGuard Module</div>
+    </div>
+  </div>
+  <span class="status-pill" id="sysStatus">
+    <span class="dot"></span>
+    <span id="sysStatusText">WALLET OPERATIONAL</span>
+  </span>
+  <div class="topbar-spacer"></div>
+  <button class="kill-btn" id="killBtn">⏻ Freeze Wallet</button>
+</header>
+
+<div class="kill-banner" id="killBanner">
+  <div class="skull">☠</div>
+  <div class="msg">
+    <div class="t">WALLET FROZEN — ALL SIGNING HALTED</div>
+    <div class="s" id="killBannerSub">All signing requests blocked at policy layer</div>
+  </div>
+  <button class="kill-release" id="killRelease">Unfreeze</button>
+</div>
+
+<main class="grid">
+
+  <section class="panel col-12">
+    <div class="panel-body">
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="lbl">Balance</div>
+          <div class="val">12.4821 ETH</div>
+          <div class="sub">≈ $41,204 USD</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Daily Spend</div>
+          <div class="val green">0.84 / 2.00 ETH</div>
+          <div class="sub">42% of cap</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Pending Approvals</div>
+          <div class="val amber" id="pendingCount">2</div>
+          <div class="sub">awaiting operator</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Blocked Today</div>
+          <div class="val red">7</div>
+          <div class="sub">policy violations</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel col-6">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Key Hierarchy</div>
+        <div class="panel-sub">separation of signing authority</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="key-item">
+        <div class="kico">🔑</div>
+        <div style="flex:1;">
+          <div class="kname">Agent Signing Key</div>
+          <div class="kval">ed25519 · 0x7a3f…c21</div>
+          <div class="kscope">scope: wallet.sign only · rotated 14d ago</div>
+        </div>
+      </div>
+      <div class="key-item">
+        <div class="kico">🔐</div>
+        <div style="flex:1;">
+          <div class="kname">App Key</div>
+          <div class="kval">ed25519 · 0x2b8e…4f0</div>
+          <div class="kscope">scope: tool calls · rotated 30d ago</div>
+        </div>
+      </div>
+      <div class="key-item">
+        <div class="kico">🛡️</div>
+        <div style="flex:1;">
+          <div class="kname">User Key</div>
+          <div class="kval">hardware · 0x9c1d…88a</div>
+          <div class="kscope">scope: approvals only · YubiKey 5C</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel col-6">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Spend Caps</div>
+        <div class="panel-sub">real-time policy enforcement</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div style="margin-bottom:14px;">
+        <div class="spend-meta"><span>Daily cap</span><strong>0.84 / 2.00 ETH</strong></div>
+        <div class="spend-bar"><div class="spend-fill" style="width:42%"></div></div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div class="spend-meta"><span>Per-transaction limit</span><strong>0.50 ETH</strong></div>
+        <div class="spend-bar"><div class="spend-fill" style="width:22%"></div></div>
+      </div>
+      <div>
+        <div class="spend-meta"><span>Monthly cap</span><strong>18.4 / 50.0 ETH</strong></div>
+        <div class="spend-bar"><div class="spend-fill warn" style="width:37%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel col-4">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Pending Approvals</div>
+        <div class="panel-sub">human-in-the-loop signing</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="tx-item">
+        <div class="top">
+          <span class="action">wallet.sign</span>
+          <span class="age">2m ago</span>
+        </div>
+        <div class="meta">
+          agent: <span>wallet-01</span> · to: <span>0x4a3f…9c2</span><br>
+          amount: <span>0.42 ETH</span> · rule: <span>spend-cap-threshold</span>
+        </div>
+        <div class="tx-actions">
+          <button class="btn approve">Approve</button>
+          <button class="btn deny">Deny</button>
+        </div>
+      </div>
+      <div class="tx-item">
+        <div class="top">
+          <span class="action">wallet.sign</span>
+          <span class="age">7m ago</span>
+        </div>
+        <div class="meta">
+          agent: <span>treasury-02</span> · to: <span>0x8b1e…4f0</span><br>
+          amount: <span>0.15 ETH</span> · rule: <span>new-recipient</span>
+        </div>
+        <div class="tx-actions">
+          <button class="btn approve">Approve</button>
+          <button class="btn deny">Deny</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel col-8">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Recent Transactions</div>
+        <div class="panel-sub">last 5 signed operations</div>
+      </div>
+    </div>
+    <div class="panel-body" style="padding:0;">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Agent</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Tx Hash</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>12:04:22</td>
+            <td style="color:var(--purple)">wallet-01</td>
+            <td class="hash">0x4a3f…9c2</td>
+            <td class="amt dir out">−0.42 ETH</td>
+            <td><span class="badge confirmed">CONFIRMED</span></td>
+            <td class="hash">0x8b2d…e04</td>
+          </tr>
+          <tr>
+            <td>11:52:08</td>
+            <td style="color:var(--purple)">treasury-01</td>
+            <td class="hash">0x9c1d…88a</td>
+            <td class="amt dir in">+2.10 ETH</td>
+            <td><span class="badge confirmed">CONFIRMED</span></td>
+            <td class="hash">0x1a7f…b3c</td>
+          </tr>
+          <tr>
+            <td>11:41:33</td>
+            <td style="color:var(--purple)">wallet-01</td>
+            <td class="hash">0x2b8e…4f0</td>
+            <td class="amt dir out">−0.08 ETH</td>
+            <td><span class="badge confirmed">CONFIRMED</span></td>
+            <td class="hash">0xf3c2…19d</td>
+          </tr>
+          <tr>
+            <td>11:28:11</td>
+            <td style="color:var(--purple)">wallet-01</td>
+            <td class="hash">0x7e4f…11c</td>
+            <td class="amt dir out">−3.50 ETH</td>
+            <td><span class="badge blocked">BLOCKED</span></td>
+            <td class="hash">—</td>
+          </tr>
+          <tr>
+            <td>11:15:02</td>
+            <td style="color:var(--purple)">research-01</td>
+            <td class="hash">0x5d9a…2e8</td>
+            <td class="amt dir out">−0.02 ETH</td>
+            <td><span class="badge confirmed">CONFIRMED</span></td>
+            <td class="hash">0xc8b1…77f</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel col-12">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Wallet Audit Log</div>
+        <div class="panel-sub">append-only · SHA-256 chained</div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="audit-toolbar">
+      <div class="chain-status">
+        <span class="dot"></span>
+        <span id="chainStatus">Chain verified · 342 entries intact</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="verifyBtn">Verify Integrity</button>
+    </div>
+    <div class="audit-log" id="auditLog">
+      <div class="audit-row">
+        <span class="seq">#342</span><span class="hash">a3f9…c21</span>
+        <span class="action-name">wallet.sign.confirmed</span>
+        <span class="actor">agent:wallet-01</span><span class="time">12:04:22</span>
+      </div>
+      <div class="audit-row">
+        <span class="seq">#341</span><span class="hash">8b2d…e04</span>
+        <span class="action-name">approval.grant</span>
+        <span class="actor">approver:sarah</span><span class="time">12:04:18</span>
+      </div>
+      <div class="audit-row">
+        <span class="seq">#340</span><span class="hash">f1a7…9d3</span>
+        <span class="action-name">wallet.sign.blocked</span>
+        <span class="actor">agent:wallet-01</span><span class="time">11:28:11</span>
+      </div>
+      <div class="audit-row">
+        <span class="seq">#339</span><span class="hash">2c88…b7a</span>
+        <span class="action-name">spend_cap.exceeded</span>
+        <span class="actor">policy-engine</span><span class="time">11:28:11</span>
+      </div>
+      <div class="audit-row">
+        <span class="seq">#338</span><span class="hash">7e4f…11c</span>
+        <span class="action-name">key.rotate</span>
+        <span class="actor">system</span><span class="time">11:02:44</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal" id="killModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="ico">☠</div>
+      <div>
+        <h3>Freeze Wallet</h3>
+        <p>all signing operations will halt</p>
+      </div>
+    </div>
+    <div class="modal-body">
+      <p>This will <strong>immediately block all wallet signing requests</strong>. Agents will be unable to initiate any transaction until manually unfrozen.</p>
+      <label for="killConfirm">Type FREEZE to confirm</label>
+      <input type="text" id="killConfirm" placeholder="FREEZE" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="killCancel">Cancel</button>
+      <button class="btn-danger" id="killConfirmBtn" disabled>Freeze Wallet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const auditLog = document.getElementById('auditLog');
+  const chainStatus = document.getElementById('chainStatus');
+  const chainDot = document.querySelector('.chain-status .dot');
+  const verifyBtn = document.getElementById('verifyBtn');
+  const killBtn = document.getElementById('killBtn');
+  const killModal = document.getElementById('killModal');
+  const killConfirm = document.getElementById('killConfirm');
+  const killConfirmBtn = document.getElementById('killConfirmBtn');
+  const killCancel = document.getElementById('killCancel');
+  const killBanner = document.getElementById('killBanner');
+  const killRelease = document.getElementById('killRelease');
+  const sysStatus = document.getElementById('sysStatus');
+  const sysStatusText = document.getElementById('sysStatusText');
+
+  let seq = 342;
+
+  function shortHash() {
+    const c = '0123456789abcdef';
+    let a='',b='';
+    for(let i=0;i<4;i++){a+=c[Math.floor(Math.random()*16)];b+=c[Math.floor(Math.random()*16)];}
+    return a+'…'+b;
+  }
+  function nowTime() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  }
+  function addAudit(action, actor, isKill) {
+    seq++;
+    const row = document.createElement('div');
+    row.className = 'audit-row' + (isKill?' kill-entry':'');
+    row.innerHTML = `<span class="seq">#${seq}</span><span class="hash">${shortHash()}</span><span class="action-name">${action}</span><span class="actor">${actor}</span><span class="time">${nowTime()}</span>`;
+    auditLog.prepend(row);
+  }
+
+  verifyBtn.addEventListener('click', () => {
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying…';
+    chainDot.style.background = 'var(--amber)';
+    chainDot.style.boxShadow = '0 0 5px var(--amber)';
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.floor(Math.random()*18)+6;
+      if (p >= 100) {
+        clearInterval(iv);
+        chainStatus.textContent = `Chain verified · ${seq} entries intact`;
+        chainDot.style.background = 'var(--green)';
+        chainDot.style.boxShadow = '0 0 5px var(--green)';
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify Integrity';
+        addAudit('audit.verify','operator:emir',false);
+      } else {
+        chainStatus.textContent = `Recomputing SHA-256 chain… ${p}%`;
+      }
+    }, 160);
+  });
+
+  killBtn.addEventListener('click', () => {
+    killModal.classList.add('active');
+    setTimeout(()=>killConfirm.focus(),100);
+  });
+  killCancel.addEventListener('click', () => {
+    killModal.classList.remove('active');
+    killConfirm.value='';
+    killConfirmBtn.disabled=true;
+  });
+  killConfirm.addEventListener('input', () => {
+    killConfirmBtn.disabled = killConfirm.value.trim() !== 'FREEZE';
+  });
+  killConfirmBtn.addEventListener('click', () => {
+    addAudit('wallet.freeze','operator:emir',true);
+    addAudit('signing.blocked','policy-engine',true);
+    killModal.classList.remove('active');
+    killConfirm.value='';
+    killConfirmBtn.disabled=true;
+    killBanner.classList.add('active');
+    sysStatus.classList.add('danger');
+    sysStatusText.textContent = 'WALLET FROZEN';
+    document.getElementById('killBannerSub').textContent =
+      `All signing requests blocked at policy layer · engaged by operator:emir at ${nowTime()} · audit entry #${seq}`;
+  });
+  killRelease.addEventListener('click', () => {
+    addAudit('wallet.unfreeze','operator:emir',true);
+    killBanner.classList.remove('active');
+    sysStatus.classList.remove('danger');
+    sysStatusText.textContent = 'WALLET OPERATIONAL';
+  });
+</script>
+
+</body>
+</html>
