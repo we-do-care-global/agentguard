@@ -21,9 +21,9 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${repo//-/_}
-      POSTGRES_PASSWORD: ${repo//-/_}
-      POSTGRES_DB: ${repo//-/_}
+      POSTGRES_USER: agentguard
+      POSTGRES_PASSWORD: agentguard
+      POSTGRES_DB: agentguard
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports: ["5432:5432"]

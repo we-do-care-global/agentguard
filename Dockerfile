@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -e .
 EXPOSE 8000
 
 # Default command (overridden by docker‑compose)
-CMD ["${repo//-/_}", "run", "--policy", "/app/policy.yaml"]
+CMD ["agentguard", "run", "--policy", "/app/policy.yaml"]
