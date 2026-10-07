@@ -1,0 +1,44 @@
+name: AgentGuard Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 0 * * *"  # Daily at midnight
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run AgentGuard scan
+        run: |
+          python agentguard/agentguard.py scan . --format json > scan-results.json || true
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentguard-scan-results
+          path: scan-results.json
+
+      - name: Check for critical issues
+        run: |
+          CRITICAL=$(python -c "
+          import json
+          with open('scan-results.json') as f:
+              issues = json.load(f)
+          critical = [i for i in issues if i['severity'] == 'critical']
+          print(len(critical))
+          ")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "::error::Found $CRITICAL critical security issues"
+            exit 1
+          fi
