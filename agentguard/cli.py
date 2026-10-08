@@ -9,7 +9,7 @@ import uvicorn
 import yaml
 
 from .models import Limits, Policy
-from .policy import load_policy
+from .policy import PolicyError, load_policy
 
 app = typer.Typer(add_completion=False, help="agentguard CLI")
 # Back-compat alias: earlier docs/READMEs refer to `cli`.
@@ -49,7 +49,7 @@ def run(
     # Validate policy early
     try:
         load_policy(policy)
-    except Exception as e:
+    except (PolicyError, OSError, ValueError) as e:
         typer.secho(f"❌ Invalid policy: {e}", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
