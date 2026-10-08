@@ -1,66 +1,89 @@
-# AgentGuard — Agent Security Scanner
+# AgentGuard – Security & Governance Control Plane for Autonomous AI Agents
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache%202.0)
-[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue.svg)](https://python.org)
-[![ORCID](https://img.shields.io/badge/ORCID-0009--0009--8515--2727-brightgreen.svg)](https://orcid.org/0009-0009-8515-2727)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![ORCID](https://img.shields.io/badge/orcid-0009-0009-8515-2727-brightgreen.svg)](https://orcid.org/0009-0009-8515-2727)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](https://www.python.org())
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22945778.svg)](https://doi.org/10.5281/zenodo.22945778)
+[![Tests](https://github.com/we-do-care-global/agentguard/actions/workflows/ci.yml/badge.svg)](https://github.com/we-do-care-global/agentguard/actions/workflows/ci.yml)
 
-> **Open-source CLI wedge → SaaS funnel**  
-> Free CLI → Team $99–$299/mo → Enterprise $500–$2,000/mo
+## 🚀 Live prototype
+https://command-center-agentguard-wallet-os-lz1sg2.v2.appdeploy.ai/
+
+## 📦 Production repository
+https://github.com/we-do-care-global/agentguard
+
+## 🌐 Landing page (GitHub Pages)
+https://we-do-care-global.github.io/agentguard/
 
 ---
 
-## What is AgentGuard?
-
-AgentGuard is a security scanner for AI agent configurations. It detects:
-
-- **Overly permissive tool permissions** — `allow_all`, `permit_all`, `unrestricted`
-- **Missing input validation** — `eval`, `exec`, `subprocess`, `shell=True`
-- **Indirect prompt injection vectors** — `ignore previous`, `disregard instructions`
-- **Unrestricted file system access** — `open()`, `read_file`, `write_file` without path restrictions
-- **Hardcoded credentials** — `api_key`, `token`, `secret`, `password` in source
-- **Missing rate limiting** — HTTP clients without throttling
-
-## Installation
+## Quickstart
 
 ```bash
+# Install
 pip install agentguard
+
+# Initialise a new agent (example)
+agentguard init --agent research-bot
+
+# Run with a policy file (see policy.yaml.example)
+agentguard run --policy policy.yaml
 ```
 
-## Usage
-
-```bash
-# Scan current directory
-agentguard scan .
-
-# Scan specific file
-agentguard scan path/to/config.py
-
-# JSON output
-agentguard scan . --format json
-
-# Filter by severity
-agentguard scan . --severity high
-```
-
-## GitHub Action
+### Example `policy.yaml` (if applicable)
 
 ```yaml
-- name: Run AgentGuard scan
-  run: |
-    python agentguard/agentguard.py scan . --format json > scan-results.json || true
+agent: example-bot
+allowed_tools: [web_search, read_file]
+denied_tools: [send_email, transfer_funds]
+limits:
+  max_usd_per_day: 5.00
+  max_tokens_per_call: 4000
 ```
 
-## Security Patterns
+---
 
-| Pattern | Severity | Description |
-|---------|----------|-------------|
-| `overly_permissive` | HIGH | Overly permissive tool permission |
-| `missing_validation` | CRITICAL | Dangerous function without validation |
-| `prompt_injection` | HIGH | Potential prompt injection vector |
-| `unrestricted_fs` | MEDIUM | File system access without restriction |
-| `missing_auth` | CRITICAL | Hardcoded credential detected |
-| `no_rate_limit` | MEDIUM | HTTP client without rate limiting |
+## Architecture
+
+*(Add architecture diagram as needed)*
+
+---
+
+## Development
+
+```bash
+git clone https://github.com/we-do-care-global/agentguard.git
+cd agentguard
+
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Lint
+ruff check .
+
+# Type check
+mypy agentguard
+```
+
+---
+
+## Docker compose
+
+```bash
+docker compose up -d   # starts API, Postgres, Redis
+```
+
+API will be available at `http://localhost:8000$.
+
+---
 
 ## License
+Apache 2.0 – see `LICENSE` file.
 
-Apache 2.0 — [We Do Care Global](https://wedocare-global.com/)
+---
+
+## Contact
+Open an issue or reach out to Emir Perla (@we-do-care-global) for questions, feedback, or collaboration.
