@@ -6,28 +6,31 @@ import json
 import os
 import pathlib
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, select
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy import DateTime, String, Text, create_engine, select
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from .models import AuditEntry
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    """Declarative base for the audit ORM models."""
 
 
 class AuditORM(Base):
     __tablename__ = "audit"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
-    agent = Column(String, index=True, nullable=False)
-    tool = Column(String, nullable=False)
-    input_ = Column("input", Text, nullable=False)
-    output_ = Column("output", Text, nullable=False)
-    decision = Column(String, nullable=False)
-    approved_by = Column(String, nullable=True)
-    prev_hash = Column(String(64), nullable=False, default="")
-    entry_hash = Column(String(64), nullable=False, default="")
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    agent: Mapped[str] = mapped_column(String, index=True, nullable=False)
+    tool: Mapped[str] = mapped_column(String, nullable=False)
+    input_: Mapped[str] = mapped_column("input", Text, nullable=False)
+    output_: Mapped[str] = mapped_column("output", Text, nullable=False)
+    decision: Mapped[str] = mapped_column(String, nullable=False)
+    approved_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    prev_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    entry_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
 
     def to_model(self) -> AuditEntry:
         return AuditEntry(

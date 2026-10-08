@@ -15,13 +15,13 @@ Usage:
 """
 
 import argparse
+import ast
 import json
 import os
 import re
 import sys
 from pathlib import Path
 from typing import Any
-
 
 # Security patterns to detect
 SECURITY_PATTERNS = {
@@ -61,15 +61,104 @@ SECURITY_PATTERNS = {
 SCAN_EXTENSIONS = {".py", ".js", ".ts", ".json", ".yaml", ".yml", ".toml"}
 
 
+# Names that are dangerous when *called*. Matched against actual call sites
+# (via AST) rather than raw text, so prose like "policy evaluation" or a test
+# named test_policy_load_and_eval never triggers a finding.
+DANGEROUS_CALLS = {
+    "eval",
+    "exec",
+    "compile",
+    "__import__",
+}
+
+# Dotted calls that are dangerous, e.g. os.system, subprocess.call.
+DANGEROUS_DOTTED_CALLS = {
+    "os.system",
+    "os.popen",
+    "subprocess.run",
+    "subprocess.call",
+    "subprocess.Popen",
+    "subprocess.check_output",
+    "subprocess.check_call",
+    "pickle.loads",
+    "marshal.loads",
+}
+
+# Keyword arguments that make an otherwise-normal call dangerous.
+DANGEROUS_KWARGS = {"shell": "True"}
+
+
+def _dotted_name(node: ast.AST) -> str:
+    """Render an AST call target as a dotted name, e.g. 'os.system'."""
+    parts: list[str] = []
+    cur = node
+    while isinstance(cur, ast.Attribute):
+        parts.append(cur.attr)
+        cur = cur.value
+    if isinstance(cur, ast.Name):
+        parts.append(cur.id)
+    return ".".join(reversed(parts))
+
+
 def scan_file(filepath: Path) -> list[dict[str, Any]]:
-    """Scan a single file for security issues."""
-    issues = []
+    """Scan a single Python file for dangerous call sites.
+
+    Uses the AST so that identifiers inside strings, comments, docstrings and
+    test function names are never reported. Only real call expressions count.
+    """
+    issues: list[dict[str, Any]] = []
     try:
         content = filepath.read_text(encoding="utf-8", errors="ignore")
-    except Exception:
+    except OSError:
         return issues
 
+    if filepath.suffix != ".py":
+        # Non-Python files keep the original text-based checks.
+        return _scan_text_file(filepath, content)
+
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return issues
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        name = _dotted_name(node.func)
+        short = name.rsplit(".", 1)[-1]
+        hit = None
+        if name in DANGEROUS_DOTTED_CALLS or short in DANGEROUS_CALLS:
+            hit = name or short
+        else:
+            for kw in node.keywords:
+                if kw.arg in DANGEROUS_KWARGS and _is_true(kw.value):
+                    hit = f"{name}(... {kw.arg}=True)"
+                    break
+        if hit is None:
+            continue
+        issues.append(
+            {
+                "file": str(filepath),
+                "line": node.lineno,
+                "check": "missing_validation",
+                "severity": "critical",
+                "message": "Dangerous function call without input validation",
+                "match": hit,
+            }
+        )
+    return issues
+
+
+def _is_true(node: ast.AST) -> bool:
+    return isinstance(node, ast.Constant) and node.value is True
+
+
+def _scan_text_file(filepath: Path, content: str) -> list[dict[str, Any]]:
+    """Text-based checks for non-Python files (unchanged behaviour)."""
+    issues: list[dict[str, Any]] = []
     for check_name, check in SECURITY_PATTERNS.items():
+        if check_name == "missing_validation":
+            continue  # Python-only, handled by the AST scan above
         pattern = check["pattern"]
         for match in re.finditer(pattern, content, re.IGNORECASE):
             line_num = content[: match.start()].count("\n") + 1
@@ -86,12 +175,18 @@ def scan_file(filepath: Path) -> list[dict[str, Any]]:
     return issues
 
 
+# Directories that are never production code. `tests` is excluded because test
+# suites legitimately spawn subprocesses to exercise the scanner itself.
+SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "tests", ".pytest_cache"}
+
+
 def scan_directory(path: Path) -> list[dict[str, Any]]:
     """Recursively scan directory for security issues."""
     issues = []
     for root, _dirs, files in os.walk(path):
         # Skip common non-source directories
-        if any(skip in root for skip in [".git", "__pycache__", "node_modules", ".venv"]):
+        parts = set(Path(root).parts)
+        if parts & SKIP_DIRS:
             continue
         for filename in files:
             filepath = Path(root) / filename

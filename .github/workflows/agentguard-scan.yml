@@ -21,9 +21,10 @@ jobs:
 
       - name: Run AgentGuard scan
         run: |
-          # Scan only source files. The scanner's own regex patterns and the
-          # word "evaluat*" in docstrings/test names are false positives.
-          python agentguard/agentguard.py scan agentguard/ --format json > scan-results.json || true
+          # The scanner lives at the repository root (agentguard.py), not in the
+          # package directory. No `|| true` here: if the scanner itself fails,
+          # the run must fail loudly instead of producing an empty report.
+          python agentguard.py scan . --format json > scan-results.json
 
       - name: Upload scan results
         uses: actions/upload-artifact@v4
