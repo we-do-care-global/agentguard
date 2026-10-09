@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 0 * * *"  # Daily at midnight
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:
@@ -22,25 +22,17 @@ jobs:
 
       - name: Run AgentGuard scan and check
         run: |
-          # Run scanner and capture output
           python agentguard.py scan . --format json > scan-results.json || true
-          
-          # Check if file exists and has content
           if [ ! -f scan-results.json ]; then
             echo "ERROR: scan-results.json not created"
             exit 1
           fi
-          
-          # Check file size
           size=$(wc -c < scan-results.json)
           echo "scan-results.json size: $size bytes"
-          
           if [ "$size" -eq 0 ]; then
             echo "WARNING: scan-results.json is empty"
             echo "[]" > scan-results.json
           fi
-          
-          # Check for critical issues
           CRITICAL=$(python -c "
 import json
 with open('scan-results.json') as f:
@@ -52,7 +44,6 @@ print(len(critical))
             echo "::error::Found $CRITICAL critical security issues"
             exit 1
           fi
-          
           echo "Scan passed: $CRITICAL critical issues found"
 
       - name: Upload scan results
