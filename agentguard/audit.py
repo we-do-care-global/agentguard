@@ -6,7 +6,6 @@ import json
 import os
 import pathlib
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, String, Text, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
