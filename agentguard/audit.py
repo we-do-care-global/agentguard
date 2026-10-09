@@ -28,7 +28,7 @@ class AuditORM(Base):
     input_: Mapped[str] = mapped_column("input", Text, nullable=False)
     output_: Mapped[str] = mapped_column("output", Text, nullable=False)
     decision: Mapped[str] = mapped_column(String, nullable=False)
-    approved_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    approved_by: Mapped[str | None] = mapped_column(String, nullable=True)
     prev_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
     entry_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
 
