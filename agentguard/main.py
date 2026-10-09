@@ -6,8 +6,8 @@ import os
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from pydantic import BaseModel
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from sqlalchemy.orm import Session
 
 from .audit import add_audit, get_engine, init_db, list_audit, verify_chain
@@ -54,7 +54,7 @@ class ToolCallRequest(BaseModel):
 
 class ToolCallResponse(BaseModel):
     decision: str  # ALLOWED, DENIED, APPROVAL_REQUIRED, RATE_LIMITED
-    audit_id: int
+    audit_id: int | None = None
     message: str | None = None
 
 
