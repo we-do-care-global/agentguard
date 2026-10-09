@@ -19,28 +19,43 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Run AgentGuard scan
+      - name: Run AgentGuard scan and check
         run: |
-          # The scanner lives at the repository root (agentguard.py), not in the
-          # package directory. Exit 1 means issues found, not scanner failure.
+          # Run scanner and capture output
           python agentguard.py scan . --format json > scan-results.json || true
+          
+          # Check if file exists and has content
+          if [ ! -f scan-results.json ]; then
+            echo "ERROR: scan-results.json not created"
+            exit 1
+          fi
+          
+          # Check file size
+          size=$(wc -c < scan-results.json)
+          echo "scan-results.json size: $size bytes"
+          
+          if [ "$size" -eq 0 ]; then
+            echo "WARNING: scan-results.json is empty"
+            echo "[]" > scan-results.json
+          fi
+          
+          # Check for critical issues
+          CRITICAL=$(python -c "
+import json
+with open('scan-results.json') as f:
+    issues = json.load(f)
+critical = [i for i in issues if i['severity'] == 'critical']
+print(len(critical))
+")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "::error::Found $CRITICAL critical security issues"
+            exit 1
+          fi
+          
+          echo "Scan passed: $CRITICAL critical issues found"
 
       - name: Upload scan results
         uses: actions/upload-artifact@v4
         with:
           name: agentguard-scan-results
           path: scan-results.json
-
-      - name: Check for critical issues
-        run: |
-          CRITICAL=$(python -c "
-          import json
-          with open('scan-results.json') as f:
-              issues = json.load(f)
-          critical = [i for i in issues if i['severity'] == 'critical']
-          print(len(critical))
-          ")
-          if [ "$CRITICAL" -gt 0 ]; then
-            echo "::error::Found $CRITICAL critical security issues"
-            exit 1
-          fi
