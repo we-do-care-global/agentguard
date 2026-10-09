@@ -21,8 +21,9 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: |
-          pip install --break-system-packages -e ".[dev]"
-          pip install --break-system-packages bandit safety pytest-cov
+          python -m pip install --upgrade pip
+          pip install --break-system-packages -e ".[dev]" || pip install -e .
+          pip install --break-system-packages pytest pytest-asyncio pytest-cov bandit safety
       - name: Lint
         run: ruff check agentguard/
       - name: Typecheck
