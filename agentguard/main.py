@@ -54,7 +54,7 @@ class ToolCallRequest(BaseModel):
 
 class ToolCallResponse(BaseModel):
     decision: str  # ALLOWED, DENIED, APPROVAL_REQUIRED, RATE_LIMITED
-    audit_id: int
+    audit_id: int | None = None
     message: str | None = None
 
 
