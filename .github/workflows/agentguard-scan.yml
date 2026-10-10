@@ -44,7 +44,7 @@ jobs:
           echo "Scan passed: $CRITICAL critical issues found"
 
       - name: Upload scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: agentguard-scan-results
           path: scan-results.json
